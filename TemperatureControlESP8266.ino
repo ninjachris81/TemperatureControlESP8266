@@ -50,6 +50,10 @@ bool checkInput() {
             // syntax error
             inputError("Invalid HTTP FIELD Cmd", tmp);
           }
+        } else if (tmp.startsWith("ON")) {
+          httpLogic.setActive(true);
+        } else if (tmp.startsWith("OFF")) {
+          httpLogic.setActive(false);
         } else {
           inputError("Invalid HTTP Cmd", tmp);
         }
@@ -66,6 +70,8 @@ bool checkInput() {
           } else {
             inputError("Invalid NTP Cmd", tmp);
           }
+        } else if (tmp.startsWith("SYNC")) {
+          ntpLogic.updateTime();
         } else {
           inputError("Invalid NTP Cmd", tmp);
         }

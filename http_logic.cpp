@@ -10,6 +10,8 @@ void HttpLogic::init() {
 }
 
 void HttpLogic::update() {
+  if (!this->isActive) return;
+  
   if (lastUpdate==0 || millis() - lastUpdate >  HTTP_UPDATE_INTERVAL_MS) {
     if (updateHttp()) {
       lastUpdate = millis();
@@ -18,6 +20,11 @@ void HttpLogic::update() {
       Debug::debugMsg("HTTP FAILED, Retry in", HTTP_RETRY_MS);
     }
   }
+}
+
+void HttpLogic::setActive(bool isActive) {
+  this->isActive = isActive;
+  Debug::debugMsg(isActive ? "Activated" : "Deactivated");
 }
 
 void HttpLogic::updateFieldValue(uint8_t index, int value) {

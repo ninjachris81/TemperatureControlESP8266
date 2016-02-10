@@ -22,13 +22,13 @@ public:
 
   void setInterval(unsigned int intervalMs);
 
+  bool updateTime();
+
 private:
   long lastNTPUpdate = 0;
 
   unsigned long intervalMs = NTP_INTERVAL_MS;
 
-  bool updateTime();
-  
   unsigned long sendNTPpacket(IPAddress& address, byte *packetBuffer, WiFiUDP *udp);
   
 };

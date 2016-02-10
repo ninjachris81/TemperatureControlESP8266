@@ -17,14 +17,14 @@
 
 #define HTTP_CODE_OK 200
 
-#define FIELD_INDEX_W 1
-#define FIELD_INDEX_HC 2
-#define FIELD_INDEX_TANK 3
-#define FIELD_INDEX_PUMP_W 4
-#define FIELD_INDEX_PUMP_HC 5
-#define FIELD_INDEX_FLOW_SWITCH 6
-#define FIELD_INDEX_FREE_RAM 7
-#define FIELD_INDEX_RESTARTED 8
+#define FIELD_INDEX_WATER 0
+#define FIELD_INDEX_HC 1
+#define FIELD_INDEX_TANK 2
+#define FIELD_INDEX_PUMP_W 3
+#define FIELD_INDEX_PUMP_HC 4
+#define FIELD_INDEX_FLOW_SWITCH 5
+#define FIELD_INDEX_FREE_RAM 6
+#define FIELD_INDEX_RESTARTED 7
 
 #define FIELD_COUNT 8
 
@@ -37,8 +37,11 @@ public:
 
   void updateFieldValue(uint8_t index, int value);
 
+  void setActive(bool isActive);
+
 private:
   long lastUpdate = 0;
+  bool isActive = false;
 
   int currentData[8];
 
