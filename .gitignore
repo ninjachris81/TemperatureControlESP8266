@@ -1,4 +1,8 @@
-/RemoteControl/password.h
+/MainUnit/http_utils.cpp
+/MainUnit/http_utils.h
 /MainUnit/password.h
-/Shared/debug.h
-/Shared/debug.cpp
+/RemoteControl/debug.cpp
+/RemoteControl/debug.h
+/RemoteControl/http_utils.cpp
+/RemoteControl/http_utils.h
+/RemoteControl/password.h
