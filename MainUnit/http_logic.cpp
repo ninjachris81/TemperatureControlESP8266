@@ -11,14 +11,24 @@ void HttpLogic::init() {
 }
 
 void HttpLogic::update() {
-  if (!this->isActive) return;
-  
-  if (lastUpdateHttp==0 || millis() - lastUpdateHttp >  HTTP_UPDATE_INTERVAL_MS) {
-    if (updateHttp()) {
-      lastUpdateHttp = millis();
-    } else {
-      lastUpdateHttp = millis() - HTTP_UPDATE_INTERVAL_MS + HTTP_UPDATE_RETRY_MS;
-      Debug::debugMsg("HTTP FAILED, Retry in", HTTP_UPDATE_RETRY_MS);
+  if (lastExecuteUpdate==0 || millis() - lastExecuteUpdate >  updateIntervalMs) {
+    if (this->isUpdateActive) {
+      if (executeUpdate()) {
+        lastExecuteUpdate = millis();
+      } else {
+        lastExecuteUpdate = millis() - updateIntervalMs + HTTP_UPDATE_RETRY_MS;
+        Debug::debugMsg("Update FAILED, Retry in", HTTP_UPDATE_RETRY_MS);
+      }
+    }
+  }
+
+  if (lastExecuteData==0 || millis() - lastExecuteData >  HTTP_DATA_INTERVAL_MS) {
+    if (this->isDataActive) {
+      if (executeData()) {
+        lastExecuteData = millis();
+      } else {
+        Debug::debugMsg("Data failed");
+      }
     }
   }
 
@@ -31,9 +41,14 @@ void HttpLogic::update() {
   }
 }
 
-void HttpLogic::setActive(bool isActive) {
-  this->isActive = isActive;
-  Debug::debugMsg(isActive ? "Activated" : "Deactivated");
+void HttpLogic::setUpdateActive(bool isActive) {
+  this->isUpdateActive = isActive;
+  Debug::debugMsg(isUpdateActive ? "Update activated" : "Update deactivated");
+}
+
+void HttpLogic::setDataActive(bool isActive) {
+  this->isDataActive = isActive;
+  Debug::debugMsg(isActive ? "Data activated" : "Data deactivated");
 }
 
 void HttpLogic::updateFieldValue(uint8_t index, int value) {
@@ -41,19 +56,18 @@ void HttpLogic::updateFieldValue(uint8_t index, int value) {
   currentData[index] = value;
 }
 
-bool HttpLogic::updateHttp() {
+bool HttpLogic::executeUpdate() {
   bool success = true;
 
   String query = "/update?api_key=" + apiKey;
+  
   for (uint8_t i=0;i<FIELD_COUNT;i++) {
     addParam(query, i+1, currentData[i]);
   }
 
-  Debug::debugMsg(query.c_str());
-
   int httpCode = HttpUtils::executeGET("184.106.153.149", 80, query);
   if(httpCode == HTTP_CODE_OK) {
-    OUTPUT_SERIAL.println("HTTP OK");
+    OUTPUT_SERIAL.println("HTTP UPDATE OK");
   } else {
     Debug::debugMsg("GET RC:", httpCode);
     success = false;
@@ -61,6 +75,33 @@ bool HttpLogic::updateHttp() {
 
   return success;
 }
+
+bool HttpLogic::executeData() {
+  bool success = true;
+
+  String command_string = "";
+  command_string.concat(currentData[FIELD_INDEX_WATER]);
+  command_string.concat(",");
+  command_string.concat(currentData[FIELD_INDEX_HC]);
+  command_string.concat(",");
+  command_string.concat(currentData[FIELD_INDEX_TANK]);
+  command_string.concat(",");
+  command_string.concat(currentData[FIELD_INDEX_PUMP_W]);
+  command_string.concat(",");
+  command_string.concat(currentData[FIELD_INDEX_PUMP_HC]);
+  
+  String query = "/talkbacks/6867/commands/929456?api_key=" + talkbackApiKey_6867 + "&command_string=" + command_string  + "&position=1";
+  int httpCode = HttpUtils::executePUT("184.106.153.149", 80, query, "");
+  if(httpCode == HTTP_CODE_OK) {
+    OUTPUT_SERIAL.println("HTTP DATA OK");
+  } else {
+    Debug::debugMsg("GET RC2:", httpCode);
+    success = false;
+  }
+
+  return success;
+}
+
 
 bool HttpLogic::checkHttpCmd() {
   bool success = true;

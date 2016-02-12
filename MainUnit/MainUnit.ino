@@ -48,12 +48,28 @@ bool checkInput() {
             // syntax error
             inputError("Invalid HTTP FIELD Cmd", tmp);
           }
-        } else if (tmp.startsWith("ON")) {
-          httpLogic.setActive(true);
-        } else if (tmp.startsWith("OFF")) {
-          httpLogic.setActive(false);
-        } else if (tmp.startsWith("SEND")) {
-          httpLogic.updateHttp();
+        } else if (tmp.startsWith("UPDATE ")) {
+          tmp = tmp.substring(7);
+          if (tmp.startsWith("ON")) {
+            httpLogic.setUpdateActive(true);
+          } else if (tmp.startsWith("OFF")) {
+            httpLogic.setUpdateActive(false);
+          } else if (tmp.startsWith("SEND")) {
+            httpLogic.executeUpdate();
+          } else {
+            inputError("Invalid HTTP UPDATE Cmd", tmp);
+          }
+        } else if (tmp.startsWith("DATA ")) {
+          tmp = tmp.substring(5);
+          if (tmp.startsWith("ON")) {
+            httpLogic.setDataActive(true);
+          } else if (tmp.startsWith("OFF")) {
+            httpLogic.setDataActive(false);
+          } else if (tmp.startsWith("SEND")) {
+            httpLogic.executeData();
+          } else {
+            inputError("Invalid HTTP DATA Cmd", tmp);
+          }
         } else if (tmp.startsWith("CHECK")) {
           httpLogic.checkHttpCmd();
         } else {
@@ -67,7 +83,7 @@ bool checkInput() {
 
           int tmpInterval = tmp.toInt();
           if (tmpInterval>=1000) {
-            Debug::debugMsg("INTV", tmpInterval);
+            Debug::debugMsg("NTP INTV", tmpInterval);
             ntpLogic.setInterval(tmpInterval);
           } else {
             inputError("Invalid NTP Cmd", tmp);

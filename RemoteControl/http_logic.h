@@ -6,7 +6,13 @@
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 
-#define HTTP_CHECK_INTERVAL_MS 20000
+#include "globals.h"
+
+#ifdef IS_DEBUG
+  #define HTTP_CHECK_INTERVAL_MS 5000
+#else
+  #define HTTP_CHECK_INTERVAL_MS 10000
+#endif
 
 class HttpLogic {
 public:
@@ -16,10 +22,13 @@ public:
 
   bool postCommand(String cmd);
 
-  void syncData();
+  void checkData();
   
 private:
-  unsigned long lastCheck = 0;
+  long lastCheck = 0;
+
+  String lastData = "";
+  
 };
 
 

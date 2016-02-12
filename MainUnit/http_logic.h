@@ -11,10 +11,12 @@
 
 #ifdef IS_DEBUG
   #define HTTP_UPDATE_INTERVAL_MS 20000    // 20 sec
+  #define HTTP_DATA_INTERVAL_MS 5000    // 5 sec
   #define HTTP_CHECK_CMD_INTERVAL_MS 5000    // 5 sec
   #define HTTP_UPDATE_RETRY_MS 10000   // 10 sec
 #else
   #define HTTP_UPDATE_INTERVAL_MS 300000    // 5 min
+  #define HTTP_DATA_INTERVAL_MS 10000    // 10 sec
   #define HTTP_CHECK_CMD_INTERVAL_MS 10000    // 10 sec
   #define HTTP_UPDATE_RETRY_MS 30000   // 30 sec
 #endif
@@ -37,19 +39,27 @@ public:
 
   void update();
 
+  void setUpdateActive(bool isActive);
+
+  void setDataActive(bool isActive);
+
   void updateFieldValue(uint8_t index, int value);
 
-  void setActive(bool isActive);
+  bool executeUpdate();
 
-  bool updateHttp();
+  bool executeData();
 
   bool checkHttpCmd();
 
 private:
-  long lastUpdateHttp = 0;
+  long lastExecuteUpdate = 0;
+  long lastExecuteData = 0;
   long lastCheckCmd = 0;
 
-  bool isActive = false;
+  unsigned long updateIntervalMs = HTTP_UPDATE_INTERVAL_MS;
+
+  bool isUpdateActive = false;
+  bool isDataActive = false;
 
   int currentData[8];
 

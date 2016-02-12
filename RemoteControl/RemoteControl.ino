@@ -34,8 +34,8 @@ bool checkInput() {
 
           Debug::debugMsg("CMD", tmp);
           httpLogic.postCommand(tmp);
-        } else if (tmp.startsWith("SYNC")) {
-          httpLogic.syncData();
+        } else if (tmp.startsWith("CHECK")) {
+          httpLogic.checkData();
         }
       } else if (tmp.startsWith("DEBUG ")) {
         tmp = tmp.substring(6);
