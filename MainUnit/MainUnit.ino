@@ -20,6 +20,7 @@ NtpLogic ntpLogic;
 HttpLogic httpLogic;
 
 void inputError(const char* msg, String param1) {
+  OUTPUT_SERIAL.print(">");
   OUTPUT_SERIAL.print(msg);
   OUTPUT_SERIAL.print(" ");
   OUTPUT_SERIAL.println(param1);
@@ -54,6 +55,8 @@ bool checkInput() {
           httpLogic.setActive(true);
         } else if (tmp.startsWith("OFF")) {
           httpLogic.setActive(false);
+        } else if (tmp.startsWith("SEND")) {
+          httpLogic.updateHttp();
         } else {
           inputError("Invalid HTTP Cmd", tmp);
         }
@@ -78,10 +81,10 @@ bool checkInput() {
       } else if (tmp.startsWith("DEBUG ")) {
         tmp = tmp.substring(6);
 
-        if (tmp.equals("OFF")) {
+        if (tmp.startsWith("OFF")) {
           Debug::debugMsg("Disabling debug");
           Debug::isDebug = false;
-        } else if (tmp.equals("ON")) {
+        } else if (tmp.startsWith("ON")) {
           Debug::isDebug = true;
           Debug::debugMsg("Debug enabled");
         } else {

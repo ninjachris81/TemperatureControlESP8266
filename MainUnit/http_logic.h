@@ -39,13 +39,13 @@ public:
 
   void setActive(bool isActive);
 
+  bool updateHttp();
+
 private:
   long lastUpdate = 0;
   bool isActive = false;
 
   int currentData[8];
-
-  bool updateHttp();
 
   void addParam(String &query, uint8_t index, int value);
   
