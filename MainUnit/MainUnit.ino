@@ -8,11 +8,9 @@
 #include "ntp_logic.h"
 #include "http_logic.h"
 #include "debug.h"
+#include "password.h"
 
 ESP8266WiFiMulti wiFiMulti;
-
-String ssid = "Stalnet";  //  your network SSID (name)
-String pass = "wlandome";       // your network password
 
 uint8_t timeout = 0;
 
