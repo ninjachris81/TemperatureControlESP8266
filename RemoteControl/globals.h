@@ -3,6 +3,6 @@
 
 #define OUTPUT_SERIAL Serial
 
-#define IS_DEBUG
+//#define IS_DEBUG
 
 #endif

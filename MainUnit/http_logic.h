@@ -7,15 +7,20 @@
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 
+#include "password.h"
+
 #ifdef IS_DEBUG
   #define HTTP_UPDATE_INTERVAL_MS 20000    // 20 sec
-  #define HTTP_RETRY_MS 10000   // 10 sec
+  #define HTTP_CHECK_CMD_INTERVAL_MS 5000    // 5 sec
+  #define HTTP_UPDATE_RETRY_MS 10000   // 10 sec
 #else
   #define HTTP_UPDATE_INTERVAL_MS 300000    // 5 min
-  #define HTTP_RETRY_MS 30000   // 30 sec
+  #define HTTP_CHECK_CMD_INTERVAL_MS 10000    // 10 sec
+  #define HTTP_UPDATE_RETRY_MS 30000   // 30 sec
 #endif
 
 #define HTTP_CODE_OK 200
+#define HTTP_CODE_NOT_MODIFIED 304
 
 #define FIELD_INDEX_WATER 0
 #define FIELD_INDEX_HC 1
@@ -41,14 +46,18 @@ public:
 
   bool updateHttp();
 
+  bool checkHttpCmd();
+
 private:
-  long lastUpdate = 0;
+  long lastUpdateHttp = 0;
+  long lastCheckCmd = 0;
+
   bool isActive = false;
 
   int currentData[8];
 
   void addParam(String &query, uint8_t index, int value);
-  
+
 };
 
 #endif

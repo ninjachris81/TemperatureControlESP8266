@@ -1,2 +1,4 @@
 /RemoteControl/password.h
 /MainUnit/password.h
+/Shared/debug.h
+/Shared/debug.cpp

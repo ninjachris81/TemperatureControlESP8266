@@ -1,6 +1,5 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
-#include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 
@@ -55,6 +54,8 @@ bool checkInput() {
           httpLogic.setActive(false);
         } else if (tmp.startsWith("SEND")) {
           httpLogic.updateHttp();
+        } else if (tmp.startsWith("CHECK")) {
+          httpLogic.checkHttpCmd();
         } else {
           inputError("Invalid HTTP Cmd", tmp);
         }

@@ -1,5 +1,6 @@
 #include "http_logic.h"
 #include "debug.h"
+#include "http_utils.h"
 
 void HttpLogic::init() {
   Debug::debugMsg("INIT HTTP");
@@ -12,12 +13,20 @@ void HttpLogic::init() {
 void HttpLogic::update() {
   if (!this->isActive) return;
   
-  if (lastUpdate==0 || millis() - lastUpdate >  HTTP_UPDATE_INTERVAL_MS) {
+  if (lastUpdateHttp==0 || millis() - lastUpdateHttp >  HTTP_UPDATE_INTERVAL_MS) {
     if (updateHttp()) {
-      lastUpdate = millis();
+      lastUpdateHttp = millis();
     } else {
-      lastUpdate = millis() - HTTP_UPDATE_INTERVAL_MS + HTTP_RETRY_MS;
-      Debug::debugMsg("HTTP FAILED, Retry in", HTTP_RETRY_MS);
+      lastUpdateHttp = millis() - HTTP_UPDATE_INTERVAL_MS + HTTP_UPDATE_RETRY_MS;
+      Debug::debugMsg("HTTP FAILED, Retry in", HTTP_UPDATE_RETRY_MS);
+    }
+  }
+
+  if (lastCheckCmd==0 || millis() - lastCheckCmd >  HTTP_CHECK_CMD_INTERVAL_MS) {
+    if (checkHttpCmd()) {
+      lastCheckCmd = millis();
+    } else {
+      Debug::debugMsg("Check Cmd failed");
     }
   }
 }
@@ -33,41 +42,48 @@ void HttpLogic::updateFieldValue(uint8_t index, int value) {
 }
 
 bool HttpLogic::updateHttp() {
-  HTTPClient http;
-  http.setUserAgent("TempControl");
+  bool success = true;
 
-  String query = "/update?api_key=CZPKJGC87RGLCY6J";
+  String query = "/update?api_key=" + apiKey;
   for (uint8_t i=0;i<FIELD_COUNT;i++) {
     addParam(query, i+1, currentData[i]);
   }
 
   Debug::debugMsg(query.c_str());
-  
-  http.begin("184.106.153.149", 80, query); //HTTP
 
-  uint8_t timeout = 0;
-  while(!http.connected()) {
-    delay(250);
-    timeout++;
-    if (timeout>20) break;
+  int httpCode = HttpUtils::executeGET("184.106.153.149", 80, query);
+  if(httpCode == HTTP_CODE_OK) {
+    OUTPUT_SERIAL.println("HTTP OK");
+  } else {
+    Debug::debugMsg("GET RC:", httpCode);
+    success = false;
   }
 
-  // start connection and send HTTP header
-  int httpCode = http.GET();
-  Debug::debugMsg("GET RC:", httpCode);
+  return success;
+}
 
-  // httpCode will be negative on error
-  if(httpCode > 0) {
-      // file found at server
-      if(httpCode == HTTP_CODE_OK) {
-        OUTPUT_SERIAL.println("HTTP OK");
-        return true;
-      }
+bool HttpLogic::checkHttpCmd() {
+  bool success = true;
+
+  String query = "/talkbacks/2920/commands/execute?api_key=" + talkbackApiKey_2920;
+  int httpCode, contentSize;
+  
+  String content = HttpUtils::executeGET("184.106.153.149", 80, query, httpCode, contentSize);
+  
+  if (httpCode == HTTP_CODE_OK) {
+    if (contentSize>0 && content.length() > 0) {
+      OUTPUT_SERIAL.println("EXEC " + content);
+    } else {
+      Debug::debugMsg("No new command");
+    }
+  } else if (httpCode == HTTP_CODE_NOT_MODIFIED) {
+    Debug::debugMsg("No new command");
+  } else {
+    Debug::debugMsg("GET RC:", httpCode);
+    success = false;
   }
 
-  http.end();
-  
-  return false;
+  return success;
 }
 
 void HttpLogic::addParam(String &query, uint8_t index, int value) {
