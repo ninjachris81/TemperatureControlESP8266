@@ -19,9 +19,6 @@
   #define HTTP_UPDATE_RETRY_MS 30000   // 30 sec
 #endif
 
-#define HTTP_CODE_OK 200
-#define HTTP_CODE_NOT_MODIFIED 304
-
 #define FIELD_INDEX_WATER 0
 #define FIELD_INDEX_HC 1
 #define FIELD_INDEX_TANK 2
