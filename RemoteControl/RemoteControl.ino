@@ -44,8 +44,24 @@ bool checkInput() {
           } else {
             httpLogic.checkData();
           }
+        } else if (tmp.startsWith("CHANNEL ")) {
+          tmp = tmp.substring(8);
+
+          if (tmp.startsWith("SYNC ")) {
+            tmp = tmp.substring(5);
+
+            if (tmp.startsWith("FORCE")) {
+              httpLogic.checkChannel(true);
+            } else {
+              httpLogic.checkChannel();
+            }
+          } else {
+            inputError("Invalid HTTP CHANNEL Cmd", tmp);
+          }
         } else if (tmp.startsWith("FLASH")) {
           httpLogic.checkFlash();
+        } else {
+          inputError("Invalid HTTP Cmd", tmp);
         }
       } else if (tmp.startsWith("DEBUG ")) {
         tmp = tmp.substring(6);

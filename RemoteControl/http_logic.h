@@ -29,13 +29,19 @@ public:
 
   void checkData(bool forceCheck=false);
 
+  void checkChannel(bool forceCheck=false);
+
   void checkFlash();
 
 private:
   long lastCheck = 0;
   long lastFlashCheck = 0;
 
+  int lastEntryId = 0;
+
   String lastData = "";
+
+  String getFieldValue(String data, uint8_t index);
   
 };
 

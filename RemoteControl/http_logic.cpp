@@ -65,6 +65,80 @@ void HttpLogic::checkData(bool forceCheck) {
   }
 }
 
+void HttpLogic::checkChannel(bool forceCheck) {
+  String query = "/channels/41733/feed/last.json?api_key=" + apiKey;
+  int httpCode, contentSize;
+  String content = HttpUtils::executeGET("184.106.153.149", 80, query, httpCode, contentSize);
+
+  Debug::debugMsg("CHANNEL", content);
+  Debug::debugMsg("SIZE", contentSize);
+
+  if (httpCode==HTTP_CODE_OK) {
+    if (content.length()>0) {
+      if (content.indexOf("{")>=0) {
+        int i = content.indexOf(F("\"entry_id\":"));
+        if (i>0) {
+          int entryId;
+          Debug::debugMsg("LAST ", content.substring(i+11));
+          
+          for (int o=i+11; o<i+20; o++) {
+            if (content.substring(o,o+1).equals(",")) {
+              Debug::debugMsg("ENTRYSTR", content.substring(i+11,o));
+              entryId = content.substring(i+11,o).toInt();
+              break;
+            }
+          }
+
+          if (forceCheck) {
+            lastEntryId = 0;
+          }
+
+          if (entryId!=lastEntryId) {
+            String tmp = "";
+            tmp+=getFieldValue(content, 1);
+            tmp+=",";
+            tmp+=getFieldValue(content, 2);
+            tmp+=",";
+            tmp+=getFieldValue(content, 3);
+            tmp+=",0,0,0";
+    
+            OUTPUT_SERIAL.print("TEMP ");
+            OUTPUT_SERIAL.println(tmp);
+            lastEntryId = entryId;
+          } else {
+            Debug::debugMsg("State not changed");
+          }
+        }
+      } else {
+        Debug::debugMsg("No Json response");
+      }      
+    } else {
+      Debug::debugMsg("Empty result");
+    }
+  } else {
+    Debug::debugMsg("GET RC:", httpCode);
+  }
+}
+
+String HttpLogic::getFieldValue(String data, uint8_t index) {
+  String searchStr = "\"field";
+  searchStr+=index;
+  searchStr+="\":\"";
+
+  int i = data.indexOf(searchStr);
+  if (i>=0) {
+    i+=searchStr.length();
+    
+    int o = data.indexOf("\"", i);
+    if (o>=0) {
+      //Debug::debugMsg("getFieldValue", i, o);
+      //Debug::debugMsg("getFieldValue", data.substring(i, o));
+      return data.substring(i, o);
+    }
+  }
+  return "";
+}
+
 void HttpLogic::checkFlash() {
   String query = "/talkbacks/6877/commands/execute?api_key=" + talkbackApiKey_6877;
   int httpCode, contentSize;
