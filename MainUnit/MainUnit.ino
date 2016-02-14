@@ -72,6 +72,8 @@ bool checkInput() {
           }
         } else if (tmp.startsWith("CHECK")) {
           httpLogic.checkHttpCmd();
+        } else if (tmp.startsWith("CLEAR")) {
+          httpLogic.clearHttpCmd();
         } else {
           inputError("Invalid HTTP Cmd", tmp);
         }

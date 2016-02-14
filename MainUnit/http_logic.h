@@ -55,6 +55,8 @@ public:
 
   bool checkHttpCmd();
 
+  bool clearHttpCmd();
+
 private:
   long lastExecuteUpdate = 0;
   long lastExecuteData = 0;
@@ -65,7 +67,7 @@ private:
   bool isUpdateActive = false;
   bool isDataActive = false;
 
-  int currentData[8];
+  int currentData[FIELD_COUNT];
 
   void addParam(String &query, uint8_t index, int value);
 

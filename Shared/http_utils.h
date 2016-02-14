@@ -16,11 +16,13 @@ public:
 
   static int executePOST(String host, int port, String query, String postData);
 
-  static int executePUT(String host, int port, String query, String putData);
-
   static String executePOST(String host, int port, String query, String postData, int &returnCode, int &contentSize);
 
-};
+  static int executePUT(String host, int port, String query, String putData);
+
+  static int executeDELETE(String host, int port, String query);
+
+  };
 
 
 #endif

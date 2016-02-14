@@ -129,6 +129,23 @@ bool HttpLogic::checkHttpCmd() {
   return success;
 }
 
+bool HttpLogic::clearHttpCmd() {
+  bool success = true;
+
+  String query = "/talkbacks/2920/commands?api_key=" + talkbackApiKey_2920;
+  
+  int httpCode = HttpUtils::executeDELETE("184.106.153.149", 80, query);
+  
+  if (httpCode == HTTP_CODE_OK) {
+    OUTPUT_SERIAL.println("CLEARED");
+  } else {
+    Debug::debugMsg("GET RC:", httpCode);
+    success = false;
+  }
+
+  return success;
+}
+
 void HttpLogic::addParam(String &query, uint8_t index, int value) {
   query+=F("&field");
   query+=index;
