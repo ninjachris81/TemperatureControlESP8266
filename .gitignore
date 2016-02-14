@@ -6,3 +6,5 @@
 /RemoteControl/http_utils.cpp
 /RemoteControl/http_utils.h
 /RemoteControl/password.h
+/Shared/password.h
+/ESP8266 libraries.lnk

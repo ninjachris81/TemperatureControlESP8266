@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
+#include <ESP8266httpUpdate.h>
 
 #include "globals.h"
 #include "http_logic.h"
@@ -29,13 +30,22 @@ bool checkInput() {
       if (tmp.startsWith("HTTP ")) {
         tmp = tmp.substring(5);
         if (tmp.startsWith("CMD ")) {
-          tmp = tmp.substring(6);
+          tmp = tmp.substring(4);
           tmp.trim();
 
           Debug::debugMsg("CMD", tmp);
           httpLogic.postCommand(tmp);
         } else if (tmp.startsWith("CHECK")) {
-          httpLogic.checkData();
+          tmp = tmp.substring(5);
+          tmp.trim();
+
+          if (tmp.startsWith("FORCE")) {
+            httpLogic.checkData(true);
+          } else {
+            httpLogic.checkData();
+          }
+        } else if (tmp.startsWith("FLASH")) {
+          httpLogic.checkFlash();
         }
       } else if (tmp.startsWith("DEBUG ")) {
         tmp = tmp.substring(6);
@@ -59,7 +69,8 @@ bool checkInput() {
 }
 
 void setup() {
-  OUTPUT_SERIAL.begin(115200);
+  //115200
+  OUTPUT_SERIAL.begin(9600);
 
   wiFiMulti.addAP(ssid.c_str(), pass.c_str());
 
@@ -67,6 +78,8 @@ void setup() {
 }
 
 void loop() {
+  checkInput();
+  
   timeout = 0;
 
   while (WiFi.status() != WL_CONNECTED) {

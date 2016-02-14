@@ -61,7 +61,7 @@ bool HttpLogic::executeUpdate() {
 
   String query = "/update?api_key=" + apiKey;
   
-  for (uint8_t i=0;i<FIELD_COUNT;i++) {
+  for (uint8_t i=0;i<FIELD_UPDATE_COUNT;i++) {
     addParam(query, i+1, currentData[i]);
   }
 
@@ -86,9 +86,11 @@ bool HttpLogic::executeData() {
   command_string.concat(",");
   command_string.concat(currentData[FIELD_INDEX_TANK]);
   command_string.concat(",");
-  command_string.concat(currentData[FIELD_INDEX_PUMP_W]);
+  command_string.concat(currentData[FIELD_INDEX_PUMP_WATER_ON]);
   command_string.concat(",");
-  command_string.concat(currentData[FIELD_INDEX_PUMP_HC]);
+  command_string.concat(currentData[FIELD_INDEX_PUMP_HC_ON]);
+  command_string.concat(",");
+  command_string.concat(currentData[FIELD_INDEX_TS]);
   
   String query = "/talkbacks/6867/commands/929456?api_key=" + talkbackApiKey_6867 + "&command_string=" + command_string  + "&position=1";
   int httpCode = HttpUtils::executePUT("184.106.153.149", 80, query, "");

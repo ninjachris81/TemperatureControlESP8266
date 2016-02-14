@@ -10,13 +10,13 @@
 
 class HttpUtils {
 public:
-  static bool waitUntilConnected(HTTPClient &httpClient);
-
   static int executeGET(String host, int port, String query);
 
   static String executeGET(String host, int port, String query, int &returnCode, int &contentSize);
 
   static int executePOST(String host, int port, String query, String postData);
+
+  static int executePUT(String host, int port, String query, String putData);
 
   static String executePOST(String host, int port, String query, String postData, int &returnCode, int &contentSize);
 
