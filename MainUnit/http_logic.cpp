@@ -2,15 +2,51 @@
 #include "debug.h"
 #include "http_utils.h"
 
+HttpLogic::HttpLogic() {
+  server = new WiFiServer(8080);
+}
+
+HttpLogic::~HttpLogic() {
+  delete server;
+}
+
 void HttpLogic::init() {
   Debug::debugMsg("INIT HTTP");
 
   for (uint8_t i=0;i<FIELD_COUNT;i++) {
     currentData[i] = 0;
   }
+
+  server->begin();
 }
 
 void HttpLogic::update() {
+  if (!client) {
+    client = server->available();
+  } else {
+    if (client.status()==CLOSED) {
+      Debug::debugMsg("Stopping client");
+      client.stop();
+      delay(50);
+    }
+  }
+  
+  if (client && client.connected()) {
+    //Debug::debugMsg("Client connected");
+    
+    if(client.available()) {
+      String content = client.readStringUntil('\n');
+
+      if (content.length()>0) {
+        OUTPUT_SERIAL.println("EXEC " + content);
+      } else {
+        Debug::debugMsg("No content received");
+      }
+    }
+  } else {
+    //Debug::debugMsg("Client not connected");
+  }
+  
   if (lastExecuteUpdate==0 || millis() - lastExecuteUpdate >  updateIntervalMs) {
     if (this->isUpdateActive) {
       if (executeUpdate()) {
@@ -21,24 +57,6 @@ void HttpLogic::update() {
       }
     }
   }
-
-  if (lastExecuteData==0 || millis() - lastExecuteData >  HTTP_DATA_INTERVAL_MS) {
-    if (this->isDataActive) {
-      if (executeData()) {
-        lastExecuteData = millis();
-      } else {
-        Debug::debugMsg("Data failed");
-      }
-    }
-  }
-
-  if (lastCheckCmd==0 || millis() - lastCheckCmd >  HTTP_CHECK_CMD_INTERVAL_MS) {
-    if (checkHttpCmd()) {
-      lastCheckCmd = millis();
-    } else {
-      Debug::debugMsg("Check Cmd failed");
-    }
-  }
 }
 
 void HttpLogic::setUpdateActive(bool isActive) {
@@ -46,14 +64,11 @@ void HttpLogic::setUpdateActive(bool isActive) {
   Debug::debugMsg(isUpdateActive ? "Update activated" : "Update deactivated");
 }
 
-void HttpLogic::setDataActive(bool isActive) {
-  this->isDataActive = isActive;
-  Debug::debugMsg(isActive ? "Data activated" : "Data deactivated");
-}
-
 void HttpLogic::updateFieldValue(uint8_t index, int value) {
   if (index>=FIELD_COUNT || index < 0) return;
   currentData[index] = value;
+
+  sendData();
 }
 
 bool HttpLogic::executeUpdate() {
@@ -76,74 +91,28 @@ bool HttpLogic::executeUpdate() {
   return success;
 }
 
-bool HttpLogic::executeData() {
-  bool success = true;
+void HttpLogic::sendData() {
+  if (client && client.connected()) {
+    String command_string = "";
+    command_string.concat(currentData[FIELD_INDEX_WATER]);
+    command_string.concat(",");
+    command_string.concat(currentData[FIELD_INDEX_HC]);
+    command_string.concat(",");
+    command_string.concat(currentData[FIELD_INDEX_TANK]);
+    command_string.concat(",");
+    command_string.concat(currentData[FIELD_INDEX_PUMP_WATER_ON]);
+    command_string.concat(",");
+    command_string.concat(currentData[FIELD_INDEX_PUMP_HC_ON]);
+    command_string.concat(",");
+    command_string.concat(currentData[FIELD_INDEX_TS]);
+    
+    OUTPUT_SERIAL.println("DATA SENT");
 
-  String command_string = "";
-  command_string.concat(currentData[FIELD_INDEX_WATER]);
-  command_string.concat(",");
-  command_string.concat(currentData[FIELD_INDEX_HC]);
-  command_string.concat(",");
-  command_string.concat(currentData[FIELD_INDEX_TANK]);
-  command_string.concat(",");
-  command_string.concat(currentData[FIELD_INDEX_PUMP_WATER_ON]);
-  command_string.concat(",");
-  command_string.concat(currentData[FIELD_INDEX_PUMP_HC_ON]);
-  command_string.concat(",");
-  command_string.concat(currentData[FIELD_INDEX_TS]);
-  
-  String query = "/talkbacks/6867/commands/929456?api_key=" + talkbackApiKey_6867 + "&command_string=" + command_string  + "&position=1";
-  int httpCode = HttpUtils::executePUT("184.106.153.149", 80, query, "");
-  if(httpCode == HTTP_CODE_OK) {
-    OUTPUT_SERIAL.println("HTTP DATA OK");
+    client.println(command_string);
+    client.flush();
   } else {
-    Debug::debugMsg("GET RC2:", httpCode);
-    success = false;
+    Debug::debugMsg("No client connected");
   }
-
-  return success;
-}
-
-
-bool HttpLogic::checkHttpCmd() {
-  bool success = true;
-
-  String query = "/talkbacks/2920/commands/execute?api_key=" + talkbackApiKey_2920;
-  int httpCode, contentSize;
-  
-  String content = HttpUtils::executeGET("184.106.153.149", 80, query, httpCode, contentSize);
-  
-  if (httpCode == HTTP_CODE_OK) {
-    if (contentSize>0 && content.length() > 0) {
-      OUTPUT_SERIAL.println("EXEC " + content);
-    } else {
-      Debug::debugMsg("No new command");
-    }
-  } else if (httpCode == HTTP_CODE_NOT_MODIFIED) {
-    Debug::debugMsg("No new command");
-  } else {
-    Debug::debugMsg("GET RC:", httpCode);
-    success = false;
-  }
-
-  return success;
-}
-
-bool HttpLogic::clearHttpCmd() {
-  bool success = true;
-
-  String query = "/talkbacks/2920/commands?api_key=" + talkbackApiKey_2920;
-  
-  int httpCode = HttpUtils::executeDELETE("184.106.153.149", 80, query);
-  
-  if (httpCode == HTTP_CODE_OK) {
-    OUTPUT_SERIAL.println("CLEARED");
-  } else {
-    Debug::debugMsg("GET RC:", httpCode);
-    success = false;
-  }
-
-  return success;
 }
 
 void HttpLogic::addParam(String &query, uint8_t index, int value) {

@@ -61,19 +61,11 @@ bool checkInput() {
           }
         } else if (tmp.startsWith("DATA ")) {
           tmp = tmp.substring(5);
-          if (tmp.startsWith("ON")) {
-            httpLogic.setDataActive(true);
-          } else if (tmp.startsWith("OFF")) {
-            httpLogic.setDataActive(false);
-          } else if (tmp.startsWith("SEND")) {
-            httpLogic.executeData();
+          if (tmp.startsWith("SEND")) {
+            httpLogic.sendData();
           } else {
             inputError("Invalid HTTP DATA Cmd", tmp);
           }
-        } else if (tmp.startsWith("CHECK")) {
-          httpLogic.checkHttpCmd();
-        } else if (tmp.startsWith("CLEAR")) {
-          httpLogic.clearHttpCmd();
         } else {
           inputError("Invalid HTTP Cmd", tmp);
         }
@@ -146,5 +138,5 @@ void loop() {
 
   ntpLogic.update();
 
-  delay(500);
+  delay(100);
 }

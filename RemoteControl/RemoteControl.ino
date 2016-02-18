@@ -35,22 +35,13 @@ bool checkInput() {
 
           Debug::debugMsg("CMD", tmp);
           httpLogic.postCommand(tmp);
-        } else if (tmp.startsWith("CHECK")) {
-          tmp = tmp.substring(5);
-          tmp.trim();
-
-          if (tmp.startsWith("FORCE")) {
-            httpLogic.checkData(true);
-          } else {
-            httpLogic.checkData();
-          }
         } else if (tmp.startsWith("CHANNEL ")) {
           tmp = tmp.substring(8);
 
-          if (tmp.startsWith("SYNC ")) {
-            tmp = tmp.substring(5);
+          if (tmp.startsWith("SYNC")) {
+            tmp = tmp.substring(4);
 
-            if (tmp.startsWith("FORCE")) {
+            if (tmp.startsWith(" FORCE")) {
               httpLogic.checkChannel(true);
             } else {
               httpLogic.checkChannel();
@@ -110,5 +101,5 @@ void loop() {
 
   httpLogic.update();
 
-  delay(500);
+  delay(100);
 }

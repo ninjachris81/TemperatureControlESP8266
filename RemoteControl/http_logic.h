@@ -12,11 +12,11 @@
 #define ENABLE_FLASH false
 
 #ifdef IS_DEBUG
-  #define HTTP_CHECK_INTERVAL_MS 5000
   #define HTTP_FLASH_CHECK_INTERVAL_MS 10000
+  #define SERVER_IP "192.168.178.24"
 #else
-  #define HTTP_CHECK_INTERVAL_MS 10000
   #define HTTP_FLASH_CHECK_INTERVAL_MS 60000
+  #define SERVER_IP "192.168.178.49"
 #endif
 
 class HttpLogic {
@@ -25,17 +25,16 @@ public:
 
   void update();
 
-  bool postCommand(String cmd);
-
-  void checkData(bool forceCheck=false);
+  void postCommand(String cmd);
 
   void checkChannel(bool forceCheck=false);
 
   void checkFlash();
 
 private:
-  long lastCheck = 0;
   long lastFlashCheck = 0;
+
+  WiFiClient client;
 
   int lastEntryId = 0;
 

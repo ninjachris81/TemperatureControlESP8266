@@ -8,60 +8,38 @@ void HttpLogic::init() {
 }
 
 void HttpLogic::update() {
-  if (lastCheck==0 || millis() - lastCheck > HTTP_CHECK_INTERVAL_MS) {
-    checkData();
-    lastCheck = millis();
-  }
+  if (!client.connected()) {
+    client.connect(SERVER_IP, 8080);
+    delay(10);
+  } else {
+    if (client.available()) {
+      String content = client.readStringUntil('\n');
 
+      if (content.length()>0) {
+        lastData = content;
+        OUTPUT_SERIAL.print("STATE ");
+        OUTPUT_SERIAL.println(lastData);
+      } else {
+        Debug::debugMsg("No content received");
+      }
+    }
+  }
+  
   if (ENABLE_FLASH) {
     if (lastFlashCheck==0 || millis() - lastFlashCheck > HTTP_FLASH_CHECK_INTERVAL_MS) {
-      checkData();
+      checkFlash();
       lastFlashCheck = millis();
     }
   }
 }
 
-bool HttpLogic::postCommand(String cmd) {
-  bool success = true;
-
-  String query = "/talkbacks/2920/commands?api_key=" + talkbackApiKey_2920 + "&command_string=" + cmd;
-
-  int httpCode = HttpUtils::executePOST("184.106.153.149", 80, query, "");
-  
-  if(httpCode == HTTP_CODE_OK) {
+void HttpLogic::postCommand(String cmd) {
+  if (client.connected()) {
+    client.println(cmd);
+    client.flush();
     OUTPUT_SERIAL.println("POST OK");
   } else {
-    Debug::debugMsg("GET RC:", httpCode);
-    success = false;
-  }
-
-  return success;
-}
-
-void HttpLogic::checkData(bool forceCheck) {
-  String query = "/talkbacks/6867/commands/929456?api_key=" + talkbackApiKey_6867;
-  int httpCode, contentSize;
-  String content = HttpUtils::executeGET("184.106.153.149", 80, query, httpCode, contentSize);
-
-  if (httpCode==HTTP_CODE_OK) {
-    if (forceCheck) {
-      lastData = "";
-    }
-
-    if (contentSize>0 && content.length()>0) {
-      if (!lastData.equals(content)) {
-        // new data state
-        lastData = content;
-        OUTPUT_SERIAL.print("STATE ");
-        OUTPUT_SERIAL.println(lastData);
-      } else {
-        Debug::debugMsg("Not changed");
-      }
-    } else {
-      Debug::debugMsg("Empty result");
-    }
-  } else {
-    Debug::debugMsg("GET RC:", httpCode);
+    Debug::debugMsg("Not connected");
   }
 }
 
