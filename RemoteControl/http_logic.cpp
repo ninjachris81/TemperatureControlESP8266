@@ -9,9 +9,12 @@ void HttpLogic::init() {
 
 void HttpLogic::update() {
   if (!client.connected()) {
+    checkConnected(false);
     client.connect(SERVER_IP, 8080);
     delay(10);
   } else {
+    checkConnected(true);
+    
     if (client.available()) {
       String content = client.readStringUntil('\n');
 
@@ -30,6 +33,13 @@ void HttpLogic::update() {
       checkFlash();
       lastFlashCheck = millis();
     }
+  }
+}
+
+void HttpLogic::checkConnected(bool isConnected) {
+  if (wasConnected!=isConnected) {
+    OUTPUT_SERIAL.println(isConnected ? "CONNECTED" : "DISCONNECTED");
+    wasConnected = isConnected;
   }
 }
 

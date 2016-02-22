@@ -33,6 +33,7 @@ public:
 
 private:
   long lastFlashCheck = 0;
+  bool wasConnected = false;
 
   WiFiClient client;
 
@@ -41,6 +42,8 @@ private:
   String lastData = "";
 
   String getFieldValue(String data, uint8_t index);
+
+  void checkConnected(bool isConnected);
   
 };
 
