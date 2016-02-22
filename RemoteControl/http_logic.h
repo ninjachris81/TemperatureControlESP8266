@@ -16,7 +16,7 @@
   #define SERVER_IP "192.168.178.24"
 #else
   #define HTTP_FLASH_CHECK_INTERVAL_MS 60000
-  #define SERVER_IP "192.168.178.49"
+  #define SERVER_IP "192.168.178.51"
 #endif
 
 class HttpLogic {
